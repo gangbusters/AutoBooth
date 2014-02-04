@@ -13,9 +13,7 @@
 @property (strong, nonatomic) UIImagePickerController *camera;
 @property (weak, nonatomic) IBOutlet UIButton *takePicButton;
 @property (strong, nonatomic) NSTimer *timer;
-
 @property (assign, nonatomic) int numPics;
-
 @end
 
 @implementation AutoBoothCameraViewController
@@ -37,13 +35,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(cameraIsTakingPicture:)
                                                  name:AVCaptureSessionDidStartRunningNotification object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(cameraIsFinishedTakingPicture:)
-                                                 name:AVCaptureSessionDidStopRunningNotification object:nil];
    
-    
-	// Do any additional setup after loading the view.
     self.camera = [[UIImagePickerController alloc] init];
     self.camera.delegate = self;
     self.camera.sourceType = UIImagePickerControllerSourceTypeCamera;
@@ -55,44 +47,24 @@
     float cameraAspectRatio = 4.0 / 3.0;
     float imageWidth = floorf(screenSize.width * cameraAspectRatio);
     float scale = ceilf((screenSize.height / imageWidth) * 10.0) / 10.0;
-    
     self.camera.cameraViewTransform = CGAffineTransformMakeScale(scale, scale);
     
     
     [self.view addSubview:self.camera.view];
     [self.view bringSubviewToFront:self.takePicButton];
-    
-    
-    
 }
 
 -(void) viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    
-    [self doCountdown];
 }
 
-
-
--(void) doCountdown {
-   /* [UIView animateWithDuration:3.0
-                     animations:^{
-                             
-                     } completion:^(BOOL finished){
-                     }];*/
-}
 -(void) takePic{
     if (self.numPics > 2) {
         [self.timer invalidate];
-        
-        
         return;
     }
-    
-    
     [self.camera takePicture];
     self.numPics++;
-
 }
 
 
@@ -103,22 +75,15 @@
     });
 }
 
-
--(void) cameraIsFinishedTakingPicture:(NSNotification *) notification{
-    NSLog(@"camera finished taking picture");
-}
-
 #pragma mark - UIImagePickerDelegate Methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
     NSLog(@"info: %@", info);
 }
 
 #pragma mark - Camera Actions
-
 - (IBAction)takePicButtonMethod:(id)sender {
     [self.camera takePicture];
 }
-
 
 - (void)didReceiveMemoryWarning
 {
