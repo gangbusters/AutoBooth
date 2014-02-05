@@ -10,12 +10,12 @@
 #import "PictureResultViewController.h"
 
 @interface AutoBoothViewController ()
-@property (nonatomic, assign) BOOL didPressCameraButton;
 @property (strong, nonatomic) NSArray *finalPicArray;
 @end
 
 @implementation AutoBoothViewController
 
+#pragma mark - View Cycle
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -24,17 +24,7 @@
     
 }
 
--(void) viewDidAppear:(BOOL)animated{
-    [super viewDidAppear:animated];
-    
-    if (self.didPressCameraButton) {
-        [self performSegueWithIdentifier:@"presentPictureResult" sender:self];
-    }
-}
-- (IBAction)didPushCameraButton:(id)sender {
-    self.didPressCameraButton = YES;
-}
-
+#pragma mark - Segue Prep
 -(void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
     if ([[segue identifier] isEqualToString:@"pushCamera"]) {
         AutoBoothCameraViewController *cameraViewController = ((AutoBoothCameraViewController *)[segue destinationViewController]);
@@ -43,11 +33,10 @@
     if ([[segue identifier] isEqualToString:@"presentPictureResult"]) {
         PictureResultViewController *cameraViewController = ((PictureResultViewController *)[segue destinationViewController]);
         cameraViewController.picArray = self.finalPicArray;
-    
     }
-    
 }
 
+#pragma mark - Picture protocol delegate method
 -(void) providePicturesArray:(NSArray *)picArray{
     self.finalPicArray = picArray;
 }

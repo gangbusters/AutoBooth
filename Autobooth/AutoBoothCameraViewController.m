@@ -23,16 +23,14 @@
 @implementation AutoBoothCameraViewController
 
 
--(int) timerCount{
-    
-    if (_timerCount == 0) {
+-(int) timerCount { //getter with for timer count
+    if (_timerCount <= 0) {
         self.timerLabel.alpha = 0;
     }
     else{
         self.timerLabel.alpha = 1;
         self.timerLabel.text = [NSString stringWithFormat:@"%d", _timerCount];
     }
-    
     return _timerCount;
 }
 
@@ -45,6 +43,7 @@
     return self;
 }
 
+#pragma mark - View Cycle
 - (void)viewDidLoad
 {
     [super viewDidLoad];
