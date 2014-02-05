@@ -59,9 +59,8 @@
     self.camera.delegate = self;
     self.camera.sourceType = UIImagePickerControllerSourceTypeCamera;
     self.camera.showsCameraControls = NO;
+    self.camera.cameraDevice = UIImagePickerControllerCameraDeviceFront;
     
-    NSLog(@"camera view height %f", self.camera.view.frame.size.height);
-
     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     float cameraAspectRatio = 4.0 / 3.0;
     float imageWidth = floorf(screenSize.width * cameraAspectRatio);
@@ -84,7 +83,6 @@
     if ( self.timerCount == 0)
         [self.camera takePicture];
     
-    NSLog(@"numPics %d", self.timerCount);
     self.timerCount--;
 }
 
@@ -97,7 +95,6 @@
 
 #pragma mark - UIImagePickerDelegate Methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    NSLog(@"metadata info: %@", [info objectForKey:@"UIImagePickerControllerMediaMetadata"]);
     self.timerCount = 5;
     self.numPics++;
     
