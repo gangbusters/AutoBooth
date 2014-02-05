@@ -61,6 +61,7 @@
     self.camera.sourceType = UIImagePickerControllerSourceTypeCamera;
     self.camera.showsCameraControls = NO;
     
+    NSLog(@"camera view height %f", self.camera.view.frame.size.height);
 
     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     float cameraAspectRatio = 4.0 / 3.0;
@@ -69,6 +70,7 @@
     self.camera.cameraViewTransform = CGAffineTransformMakeScale(scale, scale);
     
     [self.view addSubview:self.camera.view];
+    
     [self.view bringSubviewToFront:self.timerLabel];
 
 }
