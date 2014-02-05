@@ -13,11 +13,27 @@
 
 @interface AutoBoothCameraViewController ()
 @property (strong, nonatomic) UIImagePickerController *camera;
+@property (weak, nonatomic) IBOutlet UILabel *timerLabel;
 @property (strong, nonatomic) NSTimer *timer;
 @property (assign, nonatomic) int numPics;
+@property (assign, nonatomic) int timerCount;
 @end
 
 @implementation AutoBoothCameraViewController
+
+
+-(int) timerCount{
+    
+    if (_timerCount == 0) {
+        self.timerLabel.alpha = 0;
+    }
+    else{
+        self.timerLabel.alpha = 1;
+        self.timerLabel.text = [NSString stringWithFormat:@"%d", _timerCount];
+    }
+    
+    return _timerCount;
+}
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -31,6 +47,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.timerCount = 5;
     self.numPics = 0;
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -42,35 +59,30 @@
     self.camera.sourceType = UIImagePickerControllerSourceTypeCamera;
     self.camera.showsCameraControls = NO;
     
-    CGRect cameraFrame = self.camera.view.frame;
 
     CGSize screenSize = [[UIScreen mainScreen] bounds].size;
     float cameraAspectRatio = 4.0 / 3.0;
     float imageWidth = floorf(screenSize.width * cameraAspectRatio);
-    float scale = ceilf((screenSize.height / imageWidth) * 10.0) / 10.0;
+    float scale = ceilf((screenSize.height / imageWidth) * 12.5) / 10.0;
     self.camera.cameraViewTransform = CGAffineTransformMakeScale(scale, scale);
     
-    cameraFrame.origin.y += 20.0f;
-    self.camera.view.frame = cameraFrame;
-    
     [self.view addSubview:self.camera.view];
+    [self.view bringSubviewToFront:self.timerLabel];
+
 }
 
--(void) viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-}
-
+#pragma mark - Camera Actions
 -(void) takePic{
-    if (self.numPics > 15) {
+    if (self.numPics > 2) {
         [self.timer invalidate];
         [self dismissViewControllerAnimated:YES completion:^{}];
         return;
     }
-    if (self.numPics>=5 && self.numPics % 5 == 0)
+    if ( self.timerCount == 0)
         [self.camera takePicture];
     
-    NSLog(@"numPics %d", self.numPics);
-    self.numPics++;
+    NSLog(@"numPics %d", self.timerCount);
+    self.timerCount--;
 }
 
 -(void) cameraIsTakingPicture:(NSNotification *) notification{
@@ -83,12 +95,14 @@
 #pragma mark - UIImagePickerDelegate Methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
     NSLog(@"info: %@", info);
+    self.timerCount = 5;
+    self.numPics++;
     
+    [self.timer fire];
     
     
 }
 
-#pragma mark - Camera Actions
 
 
 - (void)didReceiveMemoryWarning
