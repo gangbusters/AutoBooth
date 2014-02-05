@@ -15,6 +15,7 @@
 @property (strong, nonatomic) UIImagePickerController *camera;
 @property (weak, nonatomic) IBOutlet UILabel *timerLabel;
 @property (strong, nonatomic) NSTimer *timer;
+@property (strong, nonatomic) NSMutableArray *picsArray;
 @property (assign, nonatomic) int numPics;
 @property (assign, nonatomic) int timerCount;
 @end
@@ -49,6 +50,7 @@
     [super viewDidLoad];
     self.timerCount = 5;
     self.numPics = 0;
+    self.picsArray = [[NSMutableArray alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(cameraIsTakingPicture:)
@@ -94,12 +96,18 @@
 
 #pragma mark - UIImagePickerDelegate Methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    NSLog(@"info: %@", info);
+    NSLog(@"metadata info: %@", [info objectForKey:@"UIImagePickerControllerMediaMetadata"]);
     self.timerCount = 5;
     self.numPics++;
     
     [self.timer fire];
     
+    UIImage *currentImage = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
+    [self.picsArray addObject:currentImage];
+    
+    if (self.numPics > 2) {
+        [self.delegate providePicturesArray:self.picsArray];
+    }
     
 }
 

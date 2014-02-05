@@ -7,9 +7,11 @@
 //
 
 #import "AutoBoothViewController.h"
+#import "PictureResultViewController.h"
 
 @interface AutoBoothViewController ()
 @property (nonatomic, assign) BOOL didPressCameraButton;
+@property (strong, nonatomic) NSArray *finalPicArray;
 @end
 
 @implementation AutoBoothViewController
@@ -33,7 +35,22 @@
     self.didPressCameraButton = YES;
 }
 
+-(void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
+    if ([[segue identifier] isEqualToString:@"pushCamera"]) {
+        AutoBoothCameraViewController *cameraViewController = ((AutoBoothCameraViewController *)[segue destinationViewController]);
+        cameraViewController.delegate = self;
+    }
+    if ([[segue identifier] isEqualToString:@"presentPictureResult"]) {
+        PictureResultViewController *cameraViewController = ((PictureResultViewController *)[segue destinationViewController]);
+        cameraViewController.picArray = self.finalPicArray;
+    
+    }
+    
+}
 
+-(void) providePicturesArray:(NSArray *)picArray{
+    self.finalPicArray = picArray;
+}
 
 - (void)didReceiveMemoryWarning
 {

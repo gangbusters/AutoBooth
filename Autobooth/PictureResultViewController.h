@@ -10,4 +10,6 @@
 
 @interface PictureResultViewController : UIViewController
 
+@property (strong, nonatomic) NSArray *picArray;
+
 @end

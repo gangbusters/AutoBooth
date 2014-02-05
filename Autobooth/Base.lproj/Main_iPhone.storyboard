@@ -84,9 +84,17 @@
                     <view key="view" contentMode="scaleToFill" id="J0u-71-lH0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                        <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OGc-9v-zNn">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            </scrollView>
+                        </subviews>
                     </view>
                     <navigationItem key="navigationItem" id="P11-7W-UPh"/>
+                    <connections>
+                        <outlet property="pictureScrollView" destination="OGc-9v-zNn" id="aq3-ay-y0P"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="But-Tj-S5h" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

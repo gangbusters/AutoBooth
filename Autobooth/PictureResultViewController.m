@@ -9,7 +9,7 @@
 #import "PictureResultViewController.h"
 
 @interface PictureResultViewController ()
-
+@property (weak, nonatomic) IBOutlet UIScrollView *pictureScrollView;
 @end
 
 @implementation PictureResultViewController
@@ -27,6 +27,9 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+    NSLog(@"the pic array %@ in picture result", self.picArray);
+    
 }
 
 - (void)didReceiveMemoryWarning

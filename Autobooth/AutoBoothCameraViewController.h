@@ -8,6 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol AutoBoothCameraDidFinishTakingPicturesDelegate <NSObject>
+
+-(void) providePicturesArray:(NSArray *) picArray;
+
+@end
+
 @interface AutoBoothCameraViewController : UIViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
+
+@property (weak, nonatomic) id<AutoBoothCameraDidFinishTakingPicturesDelegate> delegate;
+
 
 @end
