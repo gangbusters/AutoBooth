@@ -9,7 +9,7 @@
 #import "AutoBoothViewController.h"
 
 @interface AutoBoothViewController ()
-
+@property (nonatomic, assign) BOOL didPressCameraButton;
 @end
 
 @implementation AutoBoothViewController
@@ -18,9 +18,22 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    
+    self.navigationController.navigationBarHidden = YES;
     
 }
+
+-(void) viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    if (self.didPressCameraButton) {
+        [self performSegueWithIdentifier:@"presentPictureResult" sender:self];
+    }
+}
+- (IBAction)didPushCameraButton:(id)sender {
+    self.didPressCameraButton = YES;
+}
+
+
 
 - (void)didReceiveMemoryWarning
 {
