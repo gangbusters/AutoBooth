@@ -7,16 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
-@protocol AutoBoothCameraDidFinishTakingPicturesDelegate <NSObject>
 
--(void) providePicturesArray:(NSArray *) picArray;
+@interface AutoBoothCameraViewController : UIViewController <UINavigationControllerDelegate, AVCaptureAudioDataOutputSampleBufferDelegate>
 
-@end
-
-@interface AutoBoothCameraViewController : UIViewController <UINavigationControllerDelegate, UIImagePickerControllerDelegate>
-
-@property (weak, nonatomic) id<AutoBoothCameraDidFinishTakingPicturesDelegate> delegate;
 
 
 @end

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "AutoBoothCameraViewController.h"
 
-@interface AutoBoothViewController : UIViewController <AutoBoothCameraDidFinishTakingPicturesDelegate>
+@interface AutoBoothViewController : UIViewController 
 
 
 

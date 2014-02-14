@@ -19,17 +19,7 @@
                                     <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <segue destination="2uh-Zc-AVD" kind="modal" identifier="pushCamera" modalTransitionStyle="flipHorizontal" id="4mo-iL-SeG"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Nx7-xG-y16">
-                                <rect key="frame" x="114" y="353" width="93" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="View Pictures">
-                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <segue destination="ikC-YW-gVL" kind="modal" identifier="presentPictureResult" modalTransitionStyle="flipHorizontal" id="u6r-ZB-l2T"/>
+                                    <segue destination="2uh-Zc-AVD" kind="push" identifier="pushCamera" id="4mo-iL-SeG"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -57,6 +47,10 @@
                                 <color key="textColor" red="1" green="0.0" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="VHN-JJ-F3T">
+                                <rect key="frame" x="0.0" y="66" width="320" height="415"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                     </view>
                     <navigationItem key="navigationItem" id="Vf3-gC-T7l"/>
@@ -66,11 +60,13 @@
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <outlet property="timerLabel" destination="xaJ-Zd-pre" id="xCq-m4-AWg"/>
+                        <outlet property="videoOutputImage" destination="VHN-JJ-F3T" id="kuP-8r-zXX"/>
+                        <segue destination="ikC-YW-gVL" kind="push" identifier="presentPictureResult" id="Esq-v8-ryO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ofo-Lq-Tw4" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1395" y="510"/>
+            <point key="canvasLocation" x="1343" y="110"/>
         </scene>
         <!--Picture Result View Controller-->
         <scene sceneID="sgs-rJ-mpd">
@@ -93,14 +89,16 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="But-Tj-S5h" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1403" y="-267"/>
+            <point key="canvasLocation" x="1805" y="110"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="btE-Gq-nnW">
             <objects>
-                <navigationController storyboardIdentifier="AutoBooth" automaticallyAdjustsScrollViewInsets="NO" useStoryboardIdentifierAsRestorationIdentifier="YES" id="OCg-Cq-o2v" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="AutoBooth" automaticallyAdjustsScrollViewInsets="NO" useStoryboardIdentifierAsRestorationIdentifier="YES" navigationBarHidden="YES" id="OCg-Cq-o2v" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="n2f-Se-8YV">
+                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
+                    <simulatedNavigationBarMetrics key="simulatedTopBarMetrics" barStyle="black" translucent="NO" prompted="NO"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" barStyle="black" translucent="NO" id="n2f-Se-8YV">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>

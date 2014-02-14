@@ -29,11 +29,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view.
-}
-
--(void) viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
     
     CGRect myFrame = self.view.frame;
     myFrame.size.height = myFrame.size.width *4/3;
@@ -41,7 +36,8 @@
     self.pictureScrollView.contentSize = CGSizeMake(myFrame.size.width, myFrame.size.height * [self.picArray count]);
     self.pictureScrollView.scrollEnabled = YES;
     for (UIImage *image in self.picArray) {
-        UIImageView *picImageView = [[UIImageView alloc] initWithImage:image];
+        UIImage * flippedImage = [UIImage imageWithCGImage:image.CGImage scale:image.scale orientation:UIImageOrientationLeftMirrored];
+        UIImageView *picImageView = [[UIImageView alloc] initWithImage:flippedImage];
         picImageView.frame = myFrame;
         [self.pictureScrollView addSubview:picImageView];
         myFrame.origin.y += myFrame.size.height;
@@ -53,11 +49,12 @@
     
 }
 
-#pragma mark - Swipe Recognizer Selector
+#pragma mark - Gesture Recognizer Selector
 -(void) returnToMenu:(UISwipeGestureRecognizer *) swipe{
-    [self dismissViewControllerAnimated:YES completion:nil];
-
+    [self.navigationController popToRootViewControllerAnimated:YES];
 }
+
+
 
 - (void)didReceiveMemoryWarning
 {
