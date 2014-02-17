@@ -25,6 +25,7 @@
 		690B8D58188A3B7B00E65AF2 /* AutoboothTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 690B8D57188A3B7B00E65AF2 /* AutoboothTests.m */; };
 		690B8D63188D81E200E65AF2 /* AutoBoothCameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 690B8D62188D81E200E65AF2 /* AutoBoothCameraViewController.m */; };
 		69B5B67A18A014F800E74214 /* PictureResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 69B5B67918A014F800E74214 /* PictureResultViewController.m */; };
+		69C673E318AF2A69001F1FAE /* heart.png in Resources */ = {isa = PBXBuildFile; fileRef = 69C673E218AF2A69001F1FAE /* heart.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		690B8D62188D81E200E65AF2 /* AutoBoothCameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AutoBoothCameraViewController.m; sourceTree = "<group>"; };
 		69B5B67818A014F800E74214 /* PictureResultViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PictureResultViewController.h; sourceTree = "<group>"; };
 		69B5B67918A014F800E74214 /* PictureResultViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PictureResultViewController.m; sourceTree = "<group>"; };
+		69C673E218AF2A69001F1FAE /* heart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heart.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +136,7 @@
 				690B8D42188A3B7A00E65AF2 /* AutoBoothViewController.m */,
 				69B5B67818A014F800E74214 /* PictureResultViewController.h */,
 				69B5B67918A014F800E74214 /* PictureResultViewController.m */,
+				69C673E218AF2A69001F1FAE /* heart.png */,
 				690B8D44188A3B7A00E65AF2 /* Images.xcassets */,
 				690B8D30188A3B7A00E65AF2 /* Supporting Files */,
 			);
@@ -251,6 +254,7 @@
 			files = (
 				690B8D40188A3B7A00E65AF2 /* Main_iPad.storyboard in Resources */,
 				690B8D45188A3B7A00E65AF2 /* Images.xcassets in Resources */,
+				69C673E318AF2A69001F1FAE /* heart.png in Resources */,
 				690B8D3D188A3B7A00E65AF2 /* Main_iPhone.storyboard in Resources */,
 				690B8D34188A3B7A00E65AF2 /* InfoPlist.strings in Resources */,
 			);
