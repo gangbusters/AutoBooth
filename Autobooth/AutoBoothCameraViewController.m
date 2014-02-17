@@ -23,6 +23,9 @@
 @property (strong, nonatomic) AVCaptureVideoDataOutput *frameOutput;
 @property (strong, nonatomic) AVCaptureConnection *myConnect;
 
+@property (strong, nonatomic) CIDetector *faceDetector;
+@property (strong, nonatomic) UIImageView *glasses;
+
 
 @property (weak, nonatomic) IBOutlet UIImageView *videoOutputImage;
 @property (strong, nonatomic) CIContext *context;
@@ -30,6 +33,15 @@
 @end
 
 @implementation AutoBoothCameraViewController
+
+-(CIDetector *) faceDetector{
+    if (!_faceDetector) {
+        NSDictionary *detectorOptions = @{CIDetectorAccuracy: CIDetectorAccuracyLow};  //, CIDetectorImageOrientation: [NSNumber numberWithInt:1]};
+
+        _faceDetector = [CIDetector detectorOfType:CIDetectorTypeFace context:nil options:detectorOptions];
+    }
+    return _faceDetector;
+}
 
 -(CIContext *) context{
     if (!_context) {
@@ -74,20 +86,20 @@
 
     
     self.session = [[AVCaptureSession alloc] init];
-    self.session.sessionPreset = AVCaptureSessionPresetHigh;
+    self.session.sessionPreset = AVCaptureSessionPresetLow;
     
     self.videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     
     NSArray *theDevices = [AVCaptureDevice devices];
     
     for (AVCaptureDevice *device in theDevices) {
-        if (device.position == AVCaptureDevicePositionBack)
+        if (device.position == AVCaptureDevicePositionFront)
             self.videoDevice = [AVCaptureDevice deviceWithUniqueID:device.uniqueID];
     }
     
     NSError *error;
     if ([self.videoDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus] && [self.videoDevice lockForConfiguration:&error]) {
-        [self.videoDevice setFocusMode:AVCaptureFocusModeAutoFocus];
+        [self.videoDevice setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
     }
     
     
@@ -95,7 +107,7 @@
     self.videoInput = [AVCaptureDeviceInput deviceInputWithDevice:self.videoDevice error:nil];
     self.frameOutput = [[AVCaptureVideoDataOutput alloc] init];
     
-    self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_32BGRA]};
+    self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]};
     
     [self.session addInput:self.videoInput];
     [self.session addOutput:self.frameOutput];
@@ -105,30 +117,92 @@
     
     [self.frameOutput setSampleBufferDelegate:((id<AVCaptureVideoDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
     
+    self.myConnect = [self.frameOutput.connections objectAtIndex:0];
+
+    [self.myConnect setVideoOrientation:AVCaptureVideoOrientationPortrait];
+    [self.myConnect setVideoMirrored:YES];
+    
+    UIInterfaceOrientation phoneO = [[UIApplication sharedApplication] statusBarOrientation];
+    AVCaptureVideoOrientation AVCaptureO = self.myConnect.videoOrientation;
+    
+    NSLog(@"phone orientation %d   AVCapture orientation %d",phoneO,AVCaptureO );
+    
+    
     [self.view bringSubviewToFront:self.timerLabel];
+    
+    
+    self.glasses = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"heart.png"]];
+    [self.glasses setHidden:YES];
+    [self.view addSubview:self.glasses];
+    
+    
+    
 
 }
 
 #pragma mark - AVCapture Delegate
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection{
-    self.myConnect = connection;
-    
+
     CVPixelBufferRef pb = CMSampleBufferGetImageBuffer(sampleBuffer);
     
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pb];
     
-    CIFilter *filter = [CIFilter filterWithName:@"CIHueAdjust"];
-    [filter setDefaults];
-    [filter setValue:ciImage forKey:@"inputImage"];
-    [filter setValue:[NSNumber numberWithFloat:2.0] forKey:@"inputAngle"];
-    
-    CIImage *result = [filter valueForKey:@"outputImage"];
     
     
+    //ciImage = [ciImage imageByApplyingTransform:transform];
     CGImageRef ref = [self.context createCGImage:ciImage fromRect:ciImage.extent];
+    NSArray *features = [self.faceDetector featuresInImage:ciImage];
+    BOOL faceFound = NO;
+    for (CIFaceFeature *face in features) {
+        NSLog(@"checking for features");
+        if (face.hasLeftEyePosition && face.hasRightEyePosition) {
+            CGPoint eyeCenter = CGPointMake(face.leftEyePosition.x*0.5 + face.rightEyePosition.x*0.5, face.leftEyePosition.y*0.5 + face.rightEyePosition.y*0.5);
+            CGPoint leftEye = CGPointMake(face.leftEyePosition.x, face.leftEyePosition.y);
+            
+            NSLog(@"lefteye pos : %f %f",face.leftEyePosition.x, face.leftEyePosition.y );
+            
+            double scalex = self.videoOutputImage.bounds.size.height/ciImage.extent.size.width;
+            double scaley = self.videoOutputImage.bounds.size.width/ciImage.extent.size.height;
+            
+            CGAffineTransform transform = CGAffineTransformMakeTranslation(ciImage.extent.size.height, 0.0f);
+            transform = CGAffineTransformRotate(transform, M_PI / 2.0f);
+            
+            CGRect ciFrame = CGRectMake(ciImage.extent.origin.y*scaley, ciImage.extent.origin.x*scalex, ciImage.extent.size.height*scaley, ciImage.extent.size.width*scalex);
+            
+            
+            
+            
+            NSLog(@"ciFrame   rect: %f %f %f %f", ciFrame.origin.x, ciFrame.origin.y, ciFrame.size.width, ciFrame.size.height);
+            
+            CGRect faceFrame = CGRectMake(face.bounds.origin.x*scalex, face.bounds.origin.y*scaley, face.bounds.size.height*scaley, face.bounds.size.width*scalex);
+            UIView* faceView = [[UIView alloc] initWithFrame:faceFrame];
+            faceView.layer.borderWidth = 1;
+            faceView.layer.borderColor = [[UIColor redColor] CGColor];
+            //[self.videoOutputImage addSubview:faceView];
+            
+            
+        self.glasses.frame = CGRectMake(leftEye.y*scaley, leftEye.x*scalex, 40, 40);
+        
+        NSLog(@"heart   rect: %f %f %f %f", self.glasses.frame.origin.x, self.glasses.frame.origin.y, self.glasses.frame.size.width, self.glasses.frame.size.height);
+
+        faceFound = YES;
+        }
+    }
+    
+    if (faceFound) {
+        [self.glasses setHidden:NO];
+    }
+    //else
+        //[self.glasses setHidden:YES];
+    
+
 
     
     self.videoOutputImage.image = [UIImage imageWithCGImage:ref scale:1.0 orientation:UIImageOrientationRight];
+
+    //self.videoOutputImage.transform = CGAffineTransformMakeRotation(-M_PI/2);;
+    //self.glasses.transform =CGAffineTransformMakeRotation(-M_PI/2);
+    
     CGImageRelease(ref);
 }
 
@@ -137,8 +211,7 @@
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
     self.videoOutputImage.frame = CGRectMake(0, 0, self.view.bounds.size.height, self.view.bounds.size.width);
-    
-    [self.myConnect setVideoOrientation:AVCaptureVideoOrientationPortrait];
+    [self.myConnect setVideoOrientation:toInterfaceOrientation+1];
 
 }
 
@@ -148,7 +221,7 @@
         [self.timer invalidate];
         return;
     }
-    if ( self.timerCount == 0)
+    //if ( self.timerCount == 0)
         //[self.camera takePicture];
     
     self.timerCount--;
