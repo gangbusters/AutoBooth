@@ -31,13 +31,13 @@
     [super viewDidLoad];
     
     CGRect myFrame = self.view.frame;
-    myFrame.size.height = myFrame.size.width *4/3;
+    //myFrame.size.height = myFrame.size.width *4/3;
     [self.view addSubview:self.pictureScrollView];
     self.pictureScrollView.contentSize = CGSizeMake(myFrame.size.width, myFrame.size.height * [self.picArray count]);
     self.pictureScrollView.scrollEnabled = YES;
     for (UIImage *image in self.picArray) {
-        UIImage * flippedImage = [UIImage imageWithCGImage:image.CGImage scale:image.scale orientation:UIImageOrientationLeftMirrored];
-        UIImageView *picImageView = [[UIImageView alloc] initWithImage:flippedImage];
+        //UIImage * flippedImage = [UIImage imageWithCGImage:image.CGImage scale:image.scale orientation:UIImageOrientationLeftMirrored];
+        UIImageView *picImageView = [[UIImageView alloc] initWithImage:image];
         picImageView.frame = myFrame;
         [self.pictureScrollView addSubview:picImageView];
         myFrame.origin.y += myFrame.size.height;

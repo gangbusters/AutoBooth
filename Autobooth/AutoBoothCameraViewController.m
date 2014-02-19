@@ -9,6 +9,8 @@
 #import "AutoBoothCameraViewController.h"
 #import "PictureResultViewController.h"
 #import "AutoBoothAppDelegate.h"
+#import <CoreVideo/CoreVideo.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 @interface AutoBoothCameraViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *timerLabel;
@@ -23,6 +25,10 @@
 @property (strong, nonatomic) AVCaptureVideoDataOutput *frameOutput;
 @property (strong, nonatomic) AVCaptureConnection *myConnect;
 
+@property (strong, nonatomic) AVAssetWriter *videoWriter;
+@property (strong, nonatomic) AVAssetWriterInput *assetWriterInput;
+@property (strong, nonatomic) AVAssetWriterInputPixelBufferAdaptor *assetWriterBuffer;
+
 @property (strong, nonatomic) CIDetector *faceDetector;
 @property (strong, nonatomic) UIImageView *glasses;
 
@@ -30,18 +36,13 @@
 @property (weak, nonatomic) IBOutlet UIImageView *videoOutputImage;
 @property (strong, nonatomic) CIContext *context;
 
+@property (assign, nonatomic) CMTime time;
+
+@property (strong, nonatomic) MPMoviePlayerController *moviePlayer;
+
 @end
 
 @implementation AutoBoothCameraViewController
-
--(CIDetector *) faceDetector{
-    if (!_faceDetector) {
-        NSDictionary *detectorOptions = @{CIDetectorAccuracy: CIDetectorAccuracyLow};  //, CIDetectorImageOrientation: [NSNumber numberWithInt:1]};
-
-        _faceDetector = [CIDetector detectorOfType:CIDetectorTypeFace context:nil options:detectorOptions];
-    }
-    return _faceDetector;
-}
 
 -(CIContext *) context{
     if (!_context) {
@@ -84,14 +85,11 @@
                                                  name:AVCaptureSessionDidStartRunningNotification object:nil];
    
 
-    
     self.session = [[AVCaptureSession alloc] init];
     self.session.sessionPreset = AVCaptureSessionPresetLow;
     
     self.videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    
     NSArray *theDevices = [AVCaptureDevice devices];
-    
     for (AVCaptureDevice *device in theDevices) {
         if (device.position == AVCaptureDevicePositionFront)
             self.videoDevice = [AVCaptureDevice deviceWithUniqueID:device.uniqueID];
@@ -112,33 +110,61 @@
     [self.session addInput:self.videoInput];
     [self.session addOutput:self.frameOutput];
     
-    
     [self.session startRunning];
     
     [self.frameOutput setSampleBufferDelegate:((id<AVCaptureVideoDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
     
     self.myConnect = [self.frameOutput.connections objectAtIndex:0];
-
     [self.myConnect setVideoOrientation:AVCaptureVideoOrientationPortrait];
     [self.myConnect setVideoMirrored:YES];
-    
-    UIInterfaceOrientation phoneO = [[UIApplication sharedApplication] statusBarOrientation];
-    AVCaptureVideoOrientation AVCaptureO = self.myConnect.videoOrientation;
-    
-    NSLog(@"phone orientation %d   AVCapture orientation %d",phoneO,AVCaptureO );
-    
-    
     [self.view bringSubviewToFront:self.timerLabel];
-    
-    
-    self.glasses = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"heart.png"]];
-    [self.glasses setHidden:YES];
-    [self.view addSubview:self.glasses];
-    
-    
-    
 
+    
+    
+    //Video Writer stuff
+    
+    NSString *urlString = [self applicationDocumentsDirectory];
+    
+    
+    NSString *realURLString = [NSString stringWithFormat:@"%@/%@", urlString, @"video.mp4"];
+    
+    NSURL *url = [NSURL fileURLWithPath:realURLString];
+
+    
+    [self removeFile:url];
+
+    
+    NSError *e;
+    self.videoWriter = [AVAssetWriter assetWriterWithURL:url fileType:AVFileTypeMPEG4 error:&e];
+    NSLog(@"video writer error %@", e);
+
+    [self printDirectory];
+    
+    NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+                                   AVVideoCodecH264, AVVideoCodecKey,
+                                   [NSNumber numberWithInt:320], AVVideoWidthKey,
+                                   [NSNumber numberWithInt:573], AVVideoHeightKey,
+                                   nil];
+    
+    self.assetWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
+    
+    [self.videoWriter addInput:self.assetWriterInput];
+    
+    NSDictionary *sourcePixelBufferAttributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                           [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange], kCVPixelBufferPixelFormatTypeKey, nil];
+
+    
+    self.assetWriterBuffer = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.assetWriterInput sourcePixelBufferAttributes:sourcePixelBufferAttributesDictionary];
+    
+    self.assetWriterInput.expectsMediaDataInRealTime = YES;
+    
+    [self.videoWriter startWriting];
+    
+    [self.videoWriter startSessionAtSourceTime:kCMTimeZero];
+    
+    
 }
+
 
 #pragma mark - AVCapture Delegate
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection{
@@ -146,63 +172,16 @@
     CVPixelBufferRef pb = CMSampleBufferGetImageBuffer(sampleBuffer);
     
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pb];
-    
-    
-    
-    //ciImage = [ciImage imageByApplyingTransform:transform];
     CGImageRef ref = [self.context createCGImage:ciImage fromRect:ciImage.extent];
-    NSArray *features = [self.faceDetector featuresInImage:ciImage];
-    BOOL faceFound = NO;
-    for (CIFaceFeature *face in features) {
-        NSLog(@"checking for features");
-        if (face.hasLeftEyePosition && face.hasRightEyePosition) {
-            CGPoint eyeCenter = CGPointMake(face.leftEyePosition.x*0.5 + face.rightEyePosition.x*0.5, face.leftEyePosition.y*0.5 + face.rightEyePosition.y*0.5);
-            CGPoint leftEye = CGPointMake(face.leftEyePosition.x, face.leftEyePosition.y);
-            
-            NSLog(@"lefteye pos : %f %f",face.leftEyePosition.x, face.leftEyePosition.y );
-            
-            double scalex = self.videoOutputImage.bounds.size.height/ciImage.extent.size.width;
-            double scaley = self.videoOutputImage.bounds.size.width/ciImage.extent.size.height;
-            
-            CGAffineTransform transform = CGAffineTransformMakeTranslation(ciImage.extent.size.height, 0.0f);
-            transform = CGAffineTransformRotate(transform, M_PI / 2.0f);
-            
-            CGRect ciFrame = CGRectMake(ciImage.extent.origin.y*scaley, ciImage.extent.origin.x*scalex, ciImage.extent.size.height*scaley, ciImage.extent.size.width*scalex);
-            
-            
-            
-            
-            NSLog(@"ciFrame   rect: %f %f %f %f", ciFrame.origin.x, ciFrame.origin.y, ciFrame.size.width, ciFrame.size.height);
-            
-            CGRect faceFrame = CGRectMake(face.bounds.origin.x*scalex, face.bounds.origin.y*scaley, face.bounds.size.height*scaley, face.bounds.size.width*scalex);
-            UIView* faceView = [[UIView alloc] initWithFrame:faceFrame];
-            faceView.layer.borderWidth = 1;
-            faceView.layer.borderColor = [[UIColor redColor] CGColor];
-            //[self.videoOutputImage addSubview:faceView];
-            
-            
-        self.glasses.frame = CGRectMake(leftEye.y*scaley, leftEye.x*scalex, 40, 40);
+    self.videoOutputImage.image = [UIImage imageWithCGImage:ref scale:1.0 orientation:UIImageOrientationUp];
+    
+    if ([self.assetWriterBuffer.assetWriterInput isReadyForMoreMediaData]) {
+        self.time = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer);
         
-        NSLog(@"heart   rect: %f %f %f %f", self.glasses.frame.origin.x, self.glasses.frame.origin.y, self.glasses.frame.size.width, self.glasses.frame.size.height);
-
-        faceFound = YES;
-        }
+        BOOL sampleWriterSuccess =  [self.assetWriterBuffer appendPixelBuffer:pb withPresentationTime:self.time];
+        NSLog(@"sample writer success %d %@  %lld  %d",sampleWriterSuccess, [self.videoWriter.error description], self.time.value, self.time.timescale);
     }
-    
-    if (faceFound) {
-        [self.glasses setHidden:NO];
-    }
-    //else
-        //[self.glasses setHidden:YES];
-    
 
-
-    
-    self.videoOutputImage.image = [UIImage imageWithCGImage:ref scale:1.0 orientation:UIImageOrientationRight];
-
-    //self.videoOutputImage.transform = CGAffineTransformMakeRotation(-M_PI/2);;
-    //self.glasses.transform =CGAffineTransformMakeRotation(-M_PI/2);
-    
     CGImageRelease(ref);
 }
 
@@ -210,8 +189,14 @@
 #pragma mark - Rotate Delegate
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    self.videoOutputImage.frame = CGRectMake(0, 0, self.view.bounds.size.height, self.view.bounds.size.width);
-    [self.myConnect setVideoOrientation:toInterfaceOrientation+1];
+    
+    NSLog(@"device orientation: %d  video orientation %d", toInterfaceOrientation, self.myConnect.videoOrientation);
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.videoOutputImage.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+    });
+    
+    [self.myConnect setVideoOrientation:(AVCaptureVideoOrientation)toInterfaceOrientation];
 
 }
 
@@ -221,8 +206,8 @@
         [self.timer invalidate];
         return;
     }
-    //if ( self.timerCount == 0)
-        //[self.camera takePicture];
+    if ( self.timerCount == 0)
+        [self getPicture];
     
     self.timerCount--;
 }
@@ -234,9 +219,43 @@
     });
 }
 
+-(void) getPicture {
+    self.timerCount = 3;
+    self.numPics++;
+    [self.timer fire];
+
+    [self.picsArray addObject:self.videoOutputImage.image];
+    
+    if (self.numPics >  2) {
+        [self.session stopRunning];
+        [self.assetWriterInput markAsFinished];
+        [self.videoWriter endSessionAtSourceTime:self.time];
+        [self.videoWriter finishWritingWithCompletionHandler:^{
+
+        
+        }];
+        
+
+        NSString *urlString = [self applicationDocumentsDirectory];
+        
+        
+        NSString *realURLString = [NSString stringWithFormat:@"%@/%@", urlString, @"video.mp4"];
+        
+        NSURL *url = [NSURL fileURLWithPath:realURLString];
+        
+        MPMoviePlayerViewController *movieVC = [[MPMoviePlayerViewController alloc] initWithContentURL:url];
+        
+        [self presentViewController:movieVC animated:YES completion:nil];
+        
+        //[self performSegueWithIdentifier:@"presentPictureResult" sender:self];
+    }
+    
+}
+
+
 #pragma mark - UIImagePickerDelegate Methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    self.timerCount = 5;
+    self.timerCount = 3;
     self.numPics++;
     
     [self.timer fire];
@@ -257,6 +276,12 @@
         PictureResultViewController *cameraViewController = ((PictureResultViewController *)[segue destinationViewController]);
         cameraViewController.picArray = self.picsArray;
     }
+    
+    if ([[segue identifier] isEqualToString:@"moviePlayerSegue"]) {
+        MPMoviePlayerViewController *movieViewController = ((MPMoviePlayerController *)[segue destinationViewController]);
+
+        //[movieViewController setContentURL:url];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -265,4 +290,69 @@
     // Dispose of any resources that can be recreated.
 }
 
+
+- (NSString *) applicationDocumentsDirectory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    
+    NSString *testFolder = [basePath stringByAppendingPathComponent:@"/temp"];
+
+    NSError *e = nil;
+    //if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
+    BOOL b = NO;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:testFolder isDirectory:&b]) {
+       bool directorySuccess = [[NSFileManager defaultManager] createDirectoryAtPath:testFolder withIntermediateDirectories:NO attributes:nil error:&e];
+        NSLog(@"directory success %d %@", directorySuccess, [e description]);
+    }
+    
+    
+    //}
+    
+    NSURL *url = [NSURL fileURLWithPath:testFolder];
+    
+    
+    return testFolder;
+}
+
+-(void) printDirectory {
+
+    NSError *e;
+    
+    NSString *urlString = [self applicationDocumentsDirectory];
+    
+    NSURL *url = [NSURL fileURLWithPath:urlString];
+    
+    NSData *data = UIImagePNGRepresentation([UIImage imageNamed:@"heart.png"]);
+
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            [data writeToFile:[NSString stringWithFormat:@"%@/%@", urlString, @"myheart.png"] atomically:YES];
+
+    });
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    NSLog(@"finished writing");
+    NSArray *directory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:url.relativePath error:&e];
+    NSLog(@"directory %@ error %@", [directory description], [e description]);
+    
+    for (int i=0; i<directory.count; i++) {
+        id object = [directory objectAtIndex:i];
+        NSLog(@"object %@", [object description]);
+    }
+    
+    
+}
+- (void) removeFile:(NSURL *)fileURL
+{
+    NSString *filePath = [fileURL path];
+    NSLog(@"filepath %@", filePath);
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:filePath]) {
+        NSError *error;
+        if ([fileManager removeItemAtPath:filePath error:&error] == NO) {
+            NSLog(@"removeItemAtPath %@ error:%@", filePath, error);
+        }
+    }
+}
 @end

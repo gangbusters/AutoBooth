@@ -24,6 +24,7 @@
 		690B8D56188A3B7B00E65AF2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 690B8D54188A3B7B00E65AF2 /* InfoPlist.strings */; };
 		690B8D58188A3B7B00E65AF2 /* AutoboothTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 690B8D57188A3B7B00E65AF2 /* AutoboothTests.m */; };
 		690B8D63188D81E200E65AF2 /* AutoBoothCameraViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 690B8D62188D81E200E65AF2 /* AutoBoothCameraViewController.m */; };
+		69280B8318B49EC80055FD20 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69280B8218B49EC80055FD20 /* MediaPlayer.framework */; };
 		69B5B67A18A014F800E74214 /* PictureResultViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 69B5B67918A014F800E74214 /* PictureResultViewController.m */; };
 		69C673E318AF2A69001F1FAE /* heart.png in Resources */ = {isa = PBXBuildFile; fileRef = 69C673E218AF2A69001F1FAE /* heart.png */; };
 /* End PBXBuildFile section */
@@ -62,6 +63,7 @@
 		690B8D57188A3B7B00E65AF2 /* AutoboothTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AutoboothTests.m; sourceTree = "<group>"; };
 		690B8D61188D81E200E65AF2 /* AutoBoothCameraViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutoBoothCameraViewController.h; sourceTree = "<group>"; };
 		690B8D62188D81E200E65AF2 /* AutoBoothCameraViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AutoBoothCameraViewController.m; sourceTree = "<group>"; };
+		69280B8218B49EC80055FD20 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		69B5B67818A014F800E74214 /* PictureResultViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PictureResultViewController.h; sourceTree = "<group>"; };
 		69B5B67918A014F800E74214 /* PictureResultViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PictureResultViewController.m; sourceTree = "<group>"; };
 		69C673E218AF2A69001F1FAE /* heart.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heart.png; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69280B8318B49EC80055FD20 /* MediaPlayer.framework in Frameworks */,
 				6908E0731898172800DC5621 /* AVFoundation.framework in Frameworks */,
 				690B8D2C188A3B7A00E65AF2 /* CoreGraphics.framework in Frameworks */,
 				690B8D2E188A3B7A00E65AF2 /* UIKit.framework in Frameworks */,
@@ -114,6 +117,7 @@
 		690B8D28188A3B7A00E65AF2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				69280B8218B49EC80055FD20 /* MediaPlayer.framework */,
 				6908E0721898172800DC5621 /* AVFoundation.framework */,
 				690B8D29188A3B7A00E65AF2 /* Foundation.framework */,
 				690B8D2B188A3B7A00E65AF2 /* CoreGraphics.framework */,
