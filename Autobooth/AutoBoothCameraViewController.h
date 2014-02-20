@@ -10,7 +10,7 @@
 #import <AVFoundation/AVFoundation.h>
 
 
-@interface AutoBoothCameraViewController : UIViewController <UINavigationControllerDelegate, AVCaptureAudioDataOutputSampleBufferDelegate>
+@interface AutoBoothCameraViewController : UIViewController <UINavigationControllerDelegate, AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate>
 
 
 

@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Paul Kim. All rights reserved.
 //
 
+#define kTimerCount 4
+
 #import "AutoBoothCameraViewController.h"
 #import "PictureResultViewController.h"
 #import "AutoBoothAppDelegate.h"
@@ -25,6 +27,10 @@
 @property (strong, nonatomic) AVCaptureVideoDataOutput *frameOutput;
 @property (strong, nonatomic) AVCaptureConnection *myConnect;
 
+@property (strong, nonatomic) AVCaptureDevice *audioDevice;
+@property (strong, nonatomic) AVCaptureDeviceInput *audioInput;
+@property (strong, nonatomic) AVCaptureAudioDataOutput *audioOutput;
+
 @property (strong, nonatomic) AVAssetWriter *videoWriter;
 @property (strong, nonatomic) AVAssetWriterInput *assetWriterInput;
 @property (strong, nonatomic) AVAssetWriterInputPixelBufferAdaptor *assetWriterBuffer;
@@ -39,6 +45,8 @@
 @property (assign, nonatomic) CMTime time;
 
 @property (strong, nonatomic) MPMoviePlayerController *moviePlayer;
+
+@property (assign, nonatomic) int frame;
 
 @end
 
@@ -76,7 +84,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.timerCount = 5;
+    self.timerCount = kTimerCount-1;
     self.numPics = 0;
     self.picsArray = [[NSMutableArray alloc] init];
     
@@ -86,12 +94,14 @@
    
 
     self.session = [[AVCaptureSession alloc] init];
-    self.session.sessionPreset = AVCaptureSessionPresetLow;
+    self.session.sessionPreset = AVCaptureSessionPresetMedium;
     
     self.videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    //self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+    
     NSArray *theDevices = [AVCaptureDevice devices];
     for (AVCaptureDevice *device in theDevices) {
-        if (device.position == AVCaptureDevicePositionFront)
+        if (device.position == AVCaptureDevicePositionBack)
             self.videoDevice = [AVCaptureDevice deviceWithUniqueID:device.uniqueID];
     }
     
@@ -100,46 +110,42 @@
         [self.videoDevice setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
     }
     
-    
-    
     self.videoInput = [AVCaptureDeviceInput deviceInputWithDevice:self.videoDevice error:nil];
+    //self.audioInput = [AVCaptureDeviceInput deviceInputWithDevice:self.audioDevice error:nil];
+    
     self.frameOutput = [[AVCaptureVideoDataOutput alloc] init];
+    //self.audioOutput = [[AVCaptureAudioDataOutput alloc] init];
+    
     
     self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]};
+    NSDictionary *audioSettings = [self.audioOutput recommendedAudioSettingsForAssetWriterWithOutputFileType:AVFileTypeMPEG4];
+    
     
     [self.session addInput:self.videoInput];
     [self.session addOutput:self.frameOutput];
     
-    [self.session startRunning];
+    //[self.session addInput:self.audioInput];
+    //[self.session addOutput:self.audioOutput];
     
+    [self.session startRunning];
+
     [self.frameOutput setSampleBufferDelegate:((id<AVCaptureVideoDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
+    //[self.audioOutput setSampleBufferDelegate:((id<AVCaptureAudioDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
     
     self.myConnect = [self.frameOutput.connections objectAtIndex:0];
     [self.myConnect setVideoOrientation:AVCaptureVideoOrientationPortrait];
-    [self.myConnect setVideoMirrored:YES];
+    //[self.myConnect setVideoMirrored:YES];
     [self.view bringSubviewToFront:self.timerLabel];
 
-    
-    
     //Video Writer stuff
-    
-    NSString *urlString = [self applicationDocumentsDirectory];
-    
-    
-    NSString *realURLString = [NSString stringWithFormat:@"%@/%@", urlString, @"video.mp4"];
-    
-    NSURL *url = [NSURL fileURLWithPath:realURLString];
-
-    
+    self.frame=0;
+    NSString *urlString = [self videoPathLocation];
+    NSURL *url = [NSURL fileURLWithPath:urlString];
+    [self printDirectory];
     [self removeFile:url];
-
     
     NSError *e;
     self.videoWriter = [AVAssetWriter assetWriterWithURL:url fileType:AVFileTypeMPEG4 error:&e];
-    NSLog(@"video writer error %@", e);
-
-    [self printDirectory];
-    
     NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
                                    AVVideoCodecH264, AVVideoCodecKey,
                                    [NSNumber numberWithInt:320], AVVideoWidthKey,
@@ -147,22 +153,14 @@
                                    nil];
     
     self.assetWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
-    
     [self.videoWriter addInput:self.assetWriterInput];
-    
     NSDictionary *sourcePixelBufferAttributesDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
                                                            [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange], kCVPixelBufferPixelFormatTypeKey, nil];
 
-    
     self.assetWriterBuffer = [AVAssetWriterInputPixelBufferAdaptor assetWriterInputPixelBufferAdaptorWithAssetWriterInput:self.assetWriterInput sourcePixelBufferAttributes:sourcePixelBufferAttributesDictionary];
-    
     self.assetWriterInput.expectsMediaDataInRealTime = YES;
-    
     [self.videoWriter startWriting];
-    
     [self.videoWriter startSessionAtSourceTime:kCMTimeZero];
-    
-    
 }
 
 
@@ -170,16 +168,15 @@
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection{
 
     CVPixelBufferRef pb = CMSampleBufferGetImageBuffer(sampleBuffer);
-    
     CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pb];
     CGImageRef ref = [self.context createCGImage:ciImage fromRect:ciImage.extent];
     self.videoOutputImage.image = [UIImage imageWithCGImage:ref scale:1.0 orientation:UIImageOrientationUp];
+    self.frame++;
     
     if ([self.assetWriterBuffer.assetWriterInput isReadyForMoreMediaData]) {
-        self.time = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer);
-        
+        self.time = CMTimeMake(self.frame, 32);
         BOOL sampleWriterSuccess =  [self.assetWriterBuffer appendPixelBuffer:pb withPresentationTime:self.time];
-        NSLog(@"sample writer success %d %@  %lld  %d",sampleWriterSuccess, [self.videoWriter.error description], self.time.value, self.time.timescale);
+       // NSLog(@"sample writer success %d %@  %lld  %d  %u  %lld ",sampleWriterSuccess, [self.videoWriter.error description], self.time.value, self.time.timescale, self.time.flags, self.time.epoch);
     }
 
     CGImageRelease(ref);
@@ -189,7 +186,6 @@
 #pragma mark - Rotate Delegate
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    
     NSLog(@"device orientation: %d  video orientation %d", toInterfaceOrientation, self.myConnect.videoOrientation);
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -206,7 +202,7 @@
         [self.timer invalidate];
         return;
     }
-    if ( self.timerCount == 0)
+    if ( self.timerCount < 0)
         [self getPicture];
     
     self.timerCount--;
@@ -220,121 +216,65 @@
 }
 
 -(void) getPicture {
-    self.timerCount = 3;
+    self.timerCount = kTimerCount;
     self.numPics++;
+    [self.picsArray addObject:self.videoOutputImage.image];
     [self.timer fire];
 
-    [self.picsArray addObject:self.videoOutputImage.image];
     
     if (self.numPics >  2) {
+        dispatch_async(dispatch_get_main_queue(), ^{ self.timerLabel.alpha=0;});
+
         [self.session stopRunning];
         [self.assetWriterInput markAsFinished];
         [self.videoWriter endSessionAtSourceTime:self.time];
-        [self.videoWriter finishWritingWithCompletionHandler:^{
-
-        
-        }];
-        
-
-        NSString *urlString = [self applicationDocumentsDirectory];
-        
-        
-        NSString *realURLString = [NSString stringWithFormat:@"%@/%@", urlString, @"video.mp4"];
-        
-        NSURL *url = [NSURL fileURLWithPath:realURLString];
-        
+        [self.videoWriter finishWritingWithCompletionHandler:^{}];
+        NSString *urlString = [self videoPathLocation];
+        NSURL *url = [NSURL fileURLWithPath:urlString];
         MPMoviePlayerViewController *movieVC = [[MPMoviePlayerViewController alloc] initWithContentURL:url];
-        
-        [self presentViewController:movieVC animated:YES completion:nil];
-        
-        //[self performSegueWithIdentifier:@"presentPictureResult" sender:self];
+        [self presentViewController:movieVC animated:YES completion:^{
+            [self performSegueWithIdentifier:@"presentPictureResult" sender:self];
+        }];
     }
     
 }
 
-
-#pragma mark - UIImagePickerDelegate Methods
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info{
-    self.timerCount = 3;
-    self.numPics++;
-    
-    [self.timer fire];
-    
-    UIImage *currentImage = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
-    [self.picsArray addObject:currentImage];
-    
-    if (self.numPics >  2) {
-        [self performSegueWithIdentifier:@"presentPictureResult" sender:self];
-
-    }
-    
-}
-
+#pragma mark - Prepare for Segue
 -(void) prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
 
     if ([[segue identifier] isEqualToString:@"presentPictureResult"]) {
         PictureResultViewController *cameraViewController = ((PictureResultViewController *)[segue destinationViewController]);
         cameraViewController.picArray = self.picsArray;
     }
-    
-    if ([[segue identifier] isEqualToString:@"moviePlayerSegue"]) {
-        MPMoviePlayerViewController *movieViewController = ((MPMoviePlayerController *)[segue destinationViewController]);
-
-        //[movieViewController setContentURL:url];
-    }
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
-
-
-- (NSString *) applicationDocumentsDirectory
+#pragma mark - File Management Methods
+- (NSString *) videoPathLocation
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
     
-    NSString *testFolder = [basePath stringByAppendingPathComponent:@"/temp"];
+    NSString *tempFolder = [basePath stringByAppendingPathComponent:@"/temp"];
 
     NSError *e = nil;
-    //if (![[NSFileManager defaultManager] fileExistsAtPath:basePath]) {
     BOOL b = NO;
-    if (![[NSFileManager defaultManager] fileExistsAtPath:testFolder isDirectory:&b]) {
-       bool directorySuccess = [[NSFileManager defaultManager] createDirectoryAtPath:testFolder withIntermediateDirectories:NO attributes:nil error:&e];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:tempFolder isDirectory:&b]) {
+       bool directorySuccess = [[NSFileManager defaultManager] createDirectoryAtPath:tempFolder withIntermediateDirectories:NO attributes:nil error:&e];
         NSLog(@"directory success %d %@", directorySuccess, [e description]);
     }
     
-    
-    //}
-    
-    NSURL *url = [NSURL fileURLWithPath:testFolder];
-    
-    
-    return testFolder;
+    NSString *realURLString = [NSString stringWithFormat:@"%@/%@", tempFolder, @"video.mp4"];
+
+    return realURLString;
 }
 
 -(void) printDirectory {
 
     NSError *e;
-    
-    NSString *urlString = [self applicationDocumentsDirectory];
-    
-    NSURL *url = [NSURL fileURLWithPath:urlString];
-    
-    NSData *data = UIImagePNGRepresentation([UIImage imageNamed:@"heart.png"]);
-
-    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-            [data writeToFile:[NSString stringWithFormat:@"%@/%@", urlString, @"myheart.png"] atomically:YES];
-
-    });
-    
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-    NSLog(@"finished writing");
-    NSArray *directory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:url.relativePath error:&e];
-    NSLog(@"directory %@ error %@", [directory description], [e description]);
+    NSString *tempFolder = [basePath stringByAppendingPathComponent:@"/temp"];
+    NSArray *directory = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:tempFolder error:&e];
     
     for (int i=0; i<directory.count; i++) {
         id object = [directory objectAtIndex:i];
@@ -354,5 +294,12 @@
             NSLog(@"removeItemAtPath %@ error:%@", filePath, error);
         }
     }
+}
+
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
 }
 @end
