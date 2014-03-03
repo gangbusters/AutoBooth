@@ -97,7 +97,7 @@
     self.session.sessionPreset = AVCaptureSessionPresetMedium;
     
     self.videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    //self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+    self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
     
     NSArray *theDevices = [AVCaptureDevice devices];
     for (AVCaptureDevice *device in theDevices) {
@@ -111,30 +111,23 @@
     }
     
     self.videoInput = [AVCaptureDeviceInput deviceInputWithDevice:self.videoDevice error:nil];
-    //self.audioInput = [AVCaptureDeviceInput deviceInputWithDevice:self.audioDevice error:nil];
     
     self.frameOutput = [[AVCaptureVideoDataOutput alloc] init];
-    //self.audioOutput = [[AVCaptureAudioDataOutput alloc] init];
     
     
     self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]};
-    NSDictionary *audioSettings = [self.audioOutput recommendedAudioSettingsForAssetWriterWithOutputFileType:AVFileTypeMPEG4];
     
     
     [self.session addInput:self.videoInput];
     [self.session addOutput:self.frameOutput];
-    
-    //[self.session addInput:self.audioInput];
-    //[self.session addOutput:self.audioOutput];
+
     
     [self.session startRunning];
 
     [self.frameOutput setSampleBufferDelegate:((id<AVCaptureVideoDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
-    //[self.audioOutput setSampleBufferDelegate:((id<AVCaptureAudioDataOutputSampleBufferDelegate>)self) queue:dispatch_get_main_queue()];
     
     self.myConnect = [self.frameOutput.connections objectAtIndex:0];
     [self.myConnect setVideoOrientation:AVCaptureVideoOrientationPortrait];
-    //[self.myConnect setVideoMirrored:YES];
     [self.view bringSubviewToFront:self.timerLabel];
 
     //Video Writer stuff
@@ -183,10 +176,10 @@
 }
 
 
-#pragma mark - Rotate Delegate
+#pragma mark - Rotate
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-    NSLog(@"device orientation: %d  video orientation %d", toInterfaceOrientation, self.myConnect.videoOrientation);
+    NSLog(@"device orientation: %ld  video orientation %ld", toInterfaceOrientation, self.myConnect.videoOrientation);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         self.videoOutputImage.frame = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
@@ -210,7 +203,7 @@
 
 -(void) cameraIsTakingPicture:(NSNotification *) notification{
     dispatch_async(dispatch_get_main_queue(), ^{
-        self.timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(takePic) userInfo:nil repeats:YES];
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:0.5 target:self selector:@selector(takePic) userInfo:nil repeats:YES];
         [self.timer fire];
     });
 }

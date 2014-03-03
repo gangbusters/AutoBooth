@@ -9,8 +9,8 @@
             <objects>
                 <viewController id="vXZ-lx-hvc" customClass="AutoBoothViewController" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="6tQ-3f-kzj"/>
-                        <viewControllerLayoutGuide type="bottom" id="Mxg-mY-UPd"/>
+                        <viewControllerLayoutGuide type="top" id="Y1g-90-g7D"/>
+                        <viewControllerLayoutGuide type="bottom" id="QEt-ab-YdZ"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="kh9-bI-dsS">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
@@ -40,8 +40,8 @@
             <objects>
                 <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="2uh-Zc-AVD" customClass="AutoBoothCameraViewController" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="aFK-ED-5Uq"/>
-                        <viewControllerLayoutGuide type="bottom" id="F5W-dX-Y8k"/>
+                        <viewControllerLayoutGuide type="top" id="cdA-HU-P25"/>
+                        <viewControllerLayoutGuide type="bottom" id="b18-8O-v5N"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="tld-pM-PPh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
@@ -80,12 +80,12 @@
         <!--Picture Result View Controller-->
         <scene sceneID="sgs-rJ-mpd">
             <objects>
-                <viewController extendedLayoutIncludesOpaqueBars="YES" hidesBottomBarWhenPushed="YES" id="ikC-YW-gVL" customClass="PictureResultViewController" sceneMemberID="viewController">
+                <viewController extendedLayoutIncludesOpaqueBars="YES" automaticallyAdjustsScrollViewInsets="NO" hidesBottomBarWhenPushed="YES" id="ikC-YW-gVL" customClass="PictureResultViewController" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="WrP-Af-FKS"/>
-                        <viewControllerLayoutGuide type="bottom" id="FHU-tR-ivP"/>
+                        <viewControllerLayoutGuide type="top" id="L90-Bm-uF2"/>
+                        <viewControllerLayoutGuide type="bottom" id="3Cy-oR-FjB"/>
                     </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="J0u-71-lH0">
+                    <view key="view" contentMode="scaleToFill" verticalCompressionResistancePriority="762" id="J0u-71-lH0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
@@ -94,14 +94,59 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </scrollView>
+                            <view alpha="0.40000000000000002" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0dR-ck-4z9">
+                                <rect key="frame" x="320" y="0.0" width="80" height="568"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jVI-Kf-9Sh">
+                                        <rect key="frame" x="10" y="100" width="60" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="1 File">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="singlePictureButton:" destination="ikC-YW-gVL" eventType="touchUpInside" id="SWT-uc-smW"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Js7-Cc-vXg">
+                                        <rect key="frame" x="10" y="200" width="60" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="3 Files">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="separatePIcturesButton:" destination="ikC-YW-gVL" eventType="touchUpInside" id="ZtW-Ol-SY1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZPc-rR-Gmf">
+                                        <rect key="frame" x="15" y="400" width="60" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Share">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="shareButton:" destination="ikC-YW-gVL" eventType="touchUpInside" id="tGr-Zh-qae"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8us-Lm-qbY">
+                                        <rect key="frame" x="10" y="300" width="60" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="Video">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="videoButton:" destination="ikC-YW-gVL" eventType="touchUpInside" id="7Tw-Vg-DU6"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                         </subviews>
                     </view>
                     <navigationItem key="navigationItem" id="P11-7W-UPh"/>
-                    <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
-                    <nil key="simulatedTopBarMetrics"/>
                     <nil key="simulatedBottomBarMetrics"/>
-                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
+                        <outlet property="menuView" destination="0dR-ck-4z9" id="puR-VZ-eKw"/>
                         <outlet property="pictureScrollView" destination="OYa-q7-jXK" id="W6g-VF-WT0"/>
                     </connections>
                 </viewController>
@@ -114,8 +159,8 @@
             <objects>
                 <viewController id="Ne9-k1-wpz" customClass="MPMoviePlayerViewController" sceneMemberID="viewController">
                     <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="k2N-W5-eg0"/>
-                        <viewControllerLayoutGuide type="bottom" id="RLs-Oz-Zvb"/>
+                        <viewControllerLayoutGuide type="top" id="EUj-hZ-M9A"/>
+                        <viewControllerLayoutGuide type="bottom" id="cJ9-op-EjT"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Uop-Cb-EWH">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
