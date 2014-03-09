@@ -94,7 +94,7 @@
    
 
     self.session = [[AVCaptureSession alloc] init];
-    self.session.sessionPreset = AVCaptureSessionPresetMedium;
+    self.session.sessionPreset = AVCaptureSessionPresetiFrame960x540;
     
     self.videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     self.audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
@@ -115,7 +115,7 @@
     self.frameOutput = [[AVCaptureVideoDataOutput alloc] init];
     
     
-    self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange]};
+    self.frameOutput.videoSettings = @{(id)kCVPixelBufferPixelFormatTypeKey:[NSNumber numberWithInteger:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange]};
     
     
     [self.session addInput:self.videoInput];
@@ -141,8 +141,8 @@
     self.videoWriter = [AVAssetWriter assetWriterWithURL:url fileType:AVFileTypeMPEG4 error:&e];
     NSDictionary *videoSettings = [NSDictionary dictionaryWithObjectsAndKeys:
                                    AVVideoCodecH264, AVVideoCodecKey,
-                                   [NSNumber numberWithInt:320], AVVideoWidthKey,
-                                   [NSNumber numberWithInt:573], AVVideoHeightKey,
+                                   [NSNumber numberWithFloat:self.view.frame.size.width], AVVideoWidthKey,
+                                   [NSNumber numberWithFloat:self.view.frame.size.height], AVVideoHeightKey,
                                    nil];
     
     self.assetWriterInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:videoSettings];
@@ -167,7 +167,7 @@
     self.frame++;
     
     if ([self.assetWriterBuffer.assetWriterInput isReadyForMoreMediaData]) {
-        self.time = CMTimeMake(self.frame, 32);
+        self.time = CMTimeMake(self.frame, 24);
         BOOL sampleWriterSuccess =  [self.assetWriterBuffer appendPixelBuffer:pb withPresentationTime:self.time];
        // NSLog(@"sample writer success %d %@  %lld  %d  %u  %lld ",sampleWriterSuccess, [self.videoWriter.error description], self.time.value, self.time.timescale, self.time.flags, self.time.epoch);
     }

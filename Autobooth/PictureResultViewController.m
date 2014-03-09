@@ -56,6 +56,10 @@
     [swipeRight setDirection: UISwipeGestureRecognizerDirectionLeft];
     [self.pictureScrollView addGestureRecognizer:swipeLeft];
     
+    UITapGestureRecognizer *exitTap = [[UITapGestureRecognizer alloc] initWithTarget:self  action:@selector(tapToExit:)];
+    [self.pictureScrollView addGestureRecognizer:exitTap];
+
+    
 }
 
 #pragma mark - Menu Buttons
@@ -74,7 +78,26 @@
 
 - (IBAction)shareButton:(id)sender {
 
+    NSMutableArray *contentArray = [[NSMutableArray alloc] init];
     
+    for (UIImage *image in self.picArray) {
+        [contentArray addObject:image];
+    }
+   //[contentArray addObject:[NSURL fileURLWithPath:[self videoPathLocation]]];
+    
+    /*UIGraphicsBeginImageContext(self.pictureScrollView.contentSize);
+    [self.pictureScrollView.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *viewImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    [contentArray addObject:viewImage];
+    */
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:contentArray applicationActivities:nil];
+    
+    [self presentViewController:activityVC animated:YES completion:^{
+    
+    
+    }];
     
 }
 
@@ -99,10 +122,32 @@
 
 }
 
+-(void) tapToExit:(UITapGestureRecognizer *) swipe{
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
+- (NSString *) videoPathLocation
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    
+    NSString *tempFolder = [basePath stringByAppendingPathComponent:@"/temp"];
+    
+    NSError *e = nil;
+    BOOL b = NO;
+    if (![[NSFileManager defaultManager] fileExistsAtPath:tempFolder isDirectory:&b]) {
+        bool directorySuccess = [[NSFileManager defaultManager] createDirectoryAtPath:tempFolder withIntermediateDirectories:NO attributes:nil error:&e];
+        NSLog(@"directory success %d %@", directorySuccess, [e description]);
+    }
+    
+    NSString *realURLString = [NSString stringWithFormat:@"%@/%@", tempFolder, @"video.mp4"];
+    
+    return realURLString;
+}
 @end
